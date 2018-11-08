@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>QuickStart.qml</file>
+        <file>LogViewer.qml</file>
+        <file>DaemonOptions.qml</file>
+    </qresource>
+</RCC>
