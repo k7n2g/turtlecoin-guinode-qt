@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Labaylabay <rixombea@disroot.org>, TurtleCoin Developers & Contributors.
+** Copyright (C) 2018 TurtleCoin Developers & Contributors.
 **
 ** This file is part of TurtleBuchet
 **
