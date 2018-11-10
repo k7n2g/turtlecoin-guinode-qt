@@ -51,6 +51,9 @@ public:
 
     Q_INVOKABLE void launch();
     Q_INVOKABLE void stop();
+    Q_INVOKABLE void kill();
+    Q_INVOKABLE bool isRunning();
+
 
 signals:
     void statusChanged();

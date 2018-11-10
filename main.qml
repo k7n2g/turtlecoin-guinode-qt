@@ -47,11 +47,15 @@ ApplicationWindow {
         xhr.timeout = 6000
         xhr.onreadystatechange = function() {
             if(xhr.readyState === XMLHttpRequest.DONE) {
+                try{
                 var resp = JSON.parse(xhr.responseText.toString());
                 if(resp.status === "OK"){
                     statusLine += (resp.synced ? "Synced " : "Synchronizing... ")
                     statusLine += "("+resp.height+"/"+resp.last_known_block_index+")"
                     statusText = statusLine;
+                }
+                }catch(e){
+                    console.log(xhr.responseText.toString());
                 }
             }
         }
@@ -87,15 +91,11 @@ ApplicationWindow {
         text: ""
         informativeText: ""
         detailedText: ""
-        onButtonClicked: {
-            nodeFeeAddress.forceActiveFocus()
-        }
     }
 
     Settings {
         id: settings
-        property string daemonPath: Qt.resolvedUrl(
-                                        fileDialog.shortcuts.home + "/TurtleCoind").toString()
+        property string daemonPath: Qt.resolvedUrl("./TurtleCoind").toString()
         property string feeAddress: ""
         property int feeAmount: 0
         property string p2pBindIp: "0.0.0.0"
@@ -113,7 +113,7 @@ ApplicationWindow {
         cmdName: settings.daemonPath
         arguments: ["--dump-config"]
         onProcessStarted: {
-            statusText = "Started"
+            statusText = "Started, waiting for sync status..."
             dstate = "started"
             syncInfoTimer.restart();
         }

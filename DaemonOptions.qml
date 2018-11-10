@@ -58,7 +58,7 @@ Item {
             }
 
             RowLayout {
-                Layout.fillWidth: parent.fillWidth
+                Layout.fillWidth: true
                 width: parent.width
                 spacing: 8
 
@@ -133,7 +133,7 @@ Item {
             }
 
             RowLayout {
-                Layout.fillWidth: parent.fillWidth
+                Layout.fillWidth: true
                 width: parent.width
                 spacing: 8
 

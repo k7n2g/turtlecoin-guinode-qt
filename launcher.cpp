@@ -118,7 +118,7 @@ void Launcher::launch()
                 m_error = "Failed to start the daemon: " + QString(m_process->errorString());
                 break;
             case QProcess::Crashed:
-                m_error = "Daemon crashed!";
+                m_error = "";
                 break;
             default:
                 m_error = "Unable to start the daemon.";
@@ -126,7 +126,10 @@ void Launcher::launch()
         }
 
         m_process->closeWriteChannel();
-        emit processError();
+        if(m_error.length()){
+            emit processError();
+        }
+
     });
 
     // finished signal
@@ -162,4 +165,17 @@ void Launcher::stop()
     {
         m_process->terminate();
     }
+}
+
+void Launcher::kill()
+{
+    if(m_process->state() == QProcess::Running)
+    {
+        m_process->kill();
+    }
+}
+
+bool Launcher::isRunning()
+{
+    return (m_process->state() == QProcess::Running);
 }

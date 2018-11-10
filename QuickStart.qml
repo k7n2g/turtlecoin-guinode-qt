@@ -39,6 +39,18 @@ Item {
     property string daemonName: "TurtleCoind"
     property bool dialogDirmode: false
 
+    Timer {
+        id: killTimer
+    }
+
+    function delay(delayTime, cb){
+        killTimer.interval = delayTime;
+        killTimer.repeat = false;
+        killTimer.triggered.connect(cb);
+        killTimer.start();
+    }
+
+
 
     function getDirName(isDaemon) {
         if(!isDaemon){
@@ -145,7 +157,7 @@ Item {
                 Button {
                     id: changeDaemonPath
                     text: "Change..."
-                    anchors.verticalCenter: parent.verticalCenter
+                    Layout.alignment: Qt.AlignVCenter
                     onClicked: {
                         daemonPathFileDialog.open()
                     }
@@ -177,7 +189,7 @@ Item {
                 Button {
                     id: changeDatadir
                     text: "Change..."
-                    anchors.verticalCenter: parent.verticalCenter
+                    Layout.alignment: Qt.AlignVCenter
                     onClicked: {
                         dbPathFileDialog.open()
                     }
@@ -312,11 +324,16 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
                     launcherStopButton.enabled = false
-                    daemonLauncher.stop();
-                    statusText = "Stopping daemon..."
+                    syncInfoTimer.stop();
+                    // wait for syncstatus requests clear
+                    delay(3100, function(){
+                        statusText = "Stopping daemon..."
+                        daemonLauncher.stop();
+                        killTimer.stop();
+                        // todo: kill if daemon stuck/took too long to stop
+                    })
                 }
             }
-
 
             Button {
                 id: launcherButton
