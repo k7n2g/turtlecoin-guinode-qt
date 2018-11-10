@@ -24,21 +24,27 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.3
 import QtQuick.Dialogs 1.2
 import Qt.labs.settings 1.0
+
 import Launcher 1.0
 
 ApplicationWindow {
     id: turtleBuchet
     visible: true
     title: "TurtleBuchet - TurtleCoind Launcher"
-    width: 580
-    height: 400
-    minimumWidth: 580
-    minimumHeight: 400
+    width: 640
+    height: 420
+    minimumWidth: 640
+    minimumHeight: 420
+
+    SystemPalette {
+        id: winpalette
+    }
 
     property string logOutput: "Hello :-)"
 
     property string dstate: "stopped"
     property string statusText: "Idle"
+
 
     function getSyncInfo()
     {
@@ -146,6 +152,7 @@ ApplicationWindow {
         id: tabView
         anchors.fill: parent
         anchors.margins: 8
+
         Tab {
             id: launcherPage
             title: "Quick Start"

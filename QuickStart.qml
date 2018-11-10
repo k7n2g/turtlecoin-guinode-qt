@@ -35,6 +35,7 @@ Item {
     }
     clip: true
 
+
     property string processState: "stopped"
     property string daemonName: "TurtleCoind"
     property bool dialogDirmode: false
@@ -149,8 +150,9 @@ Item {
                     Layout.preferredWidth: (launcherTab.width / 1.275)
                     Layout.fillWidth: true
                     readOnly: true
-                    onAccepted: {
-                        settings.daemonPath = qsTr(text)
+                    onTextChanged: {
+                         settings.daemonPath = text
+                        console.log('daemon path' + settings.daemonPath);
                     }
                 }
 
@@ -181,8 +183,8 @@ Item {
                     Layout.preferredWidth: (launcherTab.width / 1.275)
                     Layout.fillWidth: true
                     readOnly: true
-                    onAccepted: {
-                        settings.dataDir = qsTr(text)
+                    onTextChanged: {
+                        settings.dataDir = text
                     }
                 }
 
@@ -265,8 +267,8 @@ Item {
             //bottomMargin: statusBarText.height + 12
 
         }
-        height: buttonRow.height * 1.5
-        color: Qt.darker(palette.window, 1.1)
+        height: buttonRow.height * 1.2
+        color: Qt.darker(palette.window, 1.1);
         border.color: Qt.darker(palette.window, 1.3)
 
         Row {
@@ -274,7 +276,7 @@ Item {
             spacing: 6
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            anchors.rightMargin: 12
+            anchors.rightMargin: 8
             height: implicitHeight
             width: parent.width
             layoutDirection: Qt.RightToLeft
@@ -284,7 +286,6 @@ Item {
                 State {
                     name: 'started'
                     PropertyChanges{
-
                             target: launcherButton
                             enabled: false
                     }
@@ -303,7 +304,6 @@ Item {
                         target: launcherStopButton
                         enabled: false
                     }
-
                 },
                 State{
                     name: 'finished'
@@ -322,6 +322,7 @@ Item {
                 id: launcherStopButton
                 text: "STOP"
                 anchors.verticalCenter: parent.verticalCenter
+
                 onClicked: {
                     launcherStopButton.enabled = false
                     syncInfoTimer.stop();
