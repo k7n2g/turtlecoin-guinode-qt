@@ -45,21 +45,25 @@ Item {
     }
 
     function delay(delayTime, cb){
-        killTimer.interval = delayTime;
-        killTimer.repeat = false;
-        killTimer.triggered.connect(cb);
-        killTimer.start();
+        killTimer.interval = delayTime
+        killTimer.repeat = false
+        killTimer.triggered.connect(cb)
+        killTimer.start()
     }
 
 
 
     function getDirName(isDaemon) {
         if(!isDaemon){
-            return settings.dataDir
+            if(settings.dataDir.length) return settings.dataDir
+            return ""
         }
 
-        var re = new RegExp(/TurtleCoind?(\.*)$/)
-        return settings.daemonPath.replace(re, '')
+        if(settings.daemonPath.length){
+            var re = new RegExp(/TurtleCoind?(\.*)$/)
+            return settings.daemonPath.replace(re, '')
+        }
+        return "TurtleCoind"
     }
 
     function isAddressValid(addr) {
@@ -151,8 +155,7 @@ Item {
                     Layout.fillWidth: true
                     readOnly: true
                     onTextChanged: {
-                         settings.daemonPath = text
-                        console.log('daemon path' + settings.daemonPath);
+                        settings.daemonPath = text
                     }
                 }
 
@@ -183,6 +186,7 @@ Item {
                     Layout.preferredWidth: (launcherTab.width / 1.275)
                     Layout.fillWidth: true
                     readOnly: true
+                    placeholderText: "Leave blank to use default path"
                     onTextChanged: {
                         settings.dataDir = text
                     }
@@ -268,7 +272,7 @@ Item {
 
         }
         height: buttonRow.height * 1.2
-        color: Qt.darker(palette.window, 1.1);
+        color: Qt.darker(palette.window, 1.1)
         border.color: Qt.darker(palette.window, 1.3)
 
         Row {
@@ -325,12 +329,13 @@ Item {
 
                 onClicked: {
                     launcherStopButton.enabled = false
-                    syncInfoTimer.stop();
+                    syncInfoTimer.stop()
+                    stopping = true
                     // wait for syncstatus requests clear
                     delay(3100, function(){
                         statusText = "Stopping daemon..."
-                        daemonLauncher.stop();
-                        killTimer.stop();
+                        daemonLauncher.stop()
+                        killTimer.stop()
                         // todo: kill if daemon stuck/took too long to stop
                     })
                 }
@@ -389,7 +394,7 @@ Item {
                             args.push(settings.rpcBindPort)
                         }
 
-                        daemonLauncher.arguments = args;
+                        daemonLauncher.arguments = args
                         daemonLauncher.launch()
                     }
 

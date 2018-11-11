@@ -40,33 +40,41 @@ ApplicationWindow {
         id: winpalette
     }
 
-    property string logOutput: "Hello :-)"
+    property string logOutput: "Daemon is not running."
 
     property string dstate: "stopped"
+    property bool stopping: false
     property string statusText: "Idle"
 
 
     function getSyncInfo()
     {
-        var statusLine = "";
+
+        var statusLine = ""
         var xhr = new XMLHttpRequest()
+        if(stopping){
+            try{xhr.abort()}catch(e){}
+            return
+        }
+
         xhr.timeout = 6000
         xhr.onreadystatechange = function() {
             if(xhr.readyState === XMLHttpRequest.DONE) {
+                if(stopping) return
                 try{
-                var resp = JSON.parse(xhr.responseText.toString());
+                var resp = JSON.parse(xhr.responseText.toString())
                 if(resp.status === "OK"){
                     statusLine += (resp.synced ? "Synced " : "Synchronizing... ")
                     statusLine += "("+resp.height+"/"+resp.last_known_block_index+")"
-                    statusText = statusLine;
+                    statusText = statusLine
                 }
                 }catch(e){
-                    console.log(xhr.responseText.toString());
+                    console.log(xhr.responseText.toString())
                 }
             }
         }
         xhr.open("GET", "http://"+settings.rpcBindIp+":"+settings.rpcBindPort+"/getinfo")
-        xhr.send();
+        xhr.send()
     }
 
     Timer {
@@ -101,7 +109,7 @@ ApplicationWindow {
 
     Settings {
         id: settings
-        property string daemonPath: Qt.resolvedUrl("./TurtleCoind").toString()
+        property string daemonPath: "TurtleCoind"
         property string feeAddress: ""
         property int feeAmount: 0
         property string p2pBindIp: "0.0.0.0"
@@ -110,7 +118,6 @@ ApplicationWindow {
         property string rpcBindIp: "127.0.0.1"
         property int rpcBindPort: 11898
         property string dataDir: ""
-        //property string statusText: "Idle"
 
     }
 
@@ -121,19 +128,20 @@ ApplicationWindow {
         onProcessStarted: {
             statusText = "Started, waiting for sync status..."
             dstate = "started"
-            syncInfoTimer.restart();
+            syncInfoTimer.restart()
         }
         onProcessStopped: {
             statusText  = "Stopped"
             dstate = "finished"
-            syncInfoTimer.stop();
+            syncInfoTimer.stop()
+            stopping = false
         }
         onProcessError: {
             messageDialog.text = errors
             messageDialog.visible = true
             statusText  = "Stopped"
             dstate = "stopped"
-            syncInfoTimer.stop();
+            syncInfoTimer.stop()
         }
         onStatusChanged: {
             statusText = status
