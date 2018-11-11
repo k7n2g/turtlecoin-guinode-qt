@@ -36,6 +36,16 @@ ApplicationWindow {
     minimumWidth: 640
     minimumHeight: 420
 
+    onClosing: {
+        close.accepted = false
+        if(dstate !== "started"){
+            close.accepted = true
+            Qt.quit()
+        }
+        daemonStopRequested = true
+        quitConfirmDialog.open()
+    }
+
     SystemPalette {
         id: winpalette
     }
@@ -43,16 +53,16 @@ ApplicationWindow {
     property string logOutput: "Daemon is not running."
 
     property string dstate: "stopped"
-    property bool stopping: false
+    property bool daemonStopRequested: false
+    property bool appQuitRequested: false
     property string statusText: "Idle"
 
 
     function getSyncInfo()
     {
-
         var statusLine = ""
         var xhr = new XMLHttpRequest()
-        if(stopping){
+        if(daemonStopRequested){
             try{xhr.abort()}catch(e){}
             return
         }
@@ -60,14 +70,20 @@ ApplicationWindow {
         xhr.timeout = 6000
         xhr.onreadystatechange = function() {
             if(xhr.readyState === XMLHttpRequest.DONE) {
-                if(stopping) return
+                if(daemonStopRequested) return
+                if(!xhr.responseText) return;
+
                 try{
-                var resp = JSON.parse(xhr.responseText.toString())
-                if(resp.status === "OK"){
-                    statusLine += (resp.synced ? "Synced " : "Synchronizing... ")
-                    statusLine += "("+resp.height+"/"+resp.last_known_block_index+")"
-                    statusText = statusLine
-                }
+                    var resp = JSON.parse(xhr.responseText.toString())
+                    if(resp.status === "OK"){
+                        if(parseInt(resp.last_known_block_index,10) <= 0) return;
+                        statusLine += (resp.synced ? "Synced " : "Synchronizing... ")
+                        statusLine += +resp.height+"/"+resp.last_known_block_index
+                        var donePercent = ((parseInt(resp.height, 10)/parseInt(resp.last_known_block_index))*100).toPrecision(4)
+                        donePercent = donePercent > 99.99 ? 100 : donePercent
+                        statusLine += " (" + donePercent.toString() + "%)";
+                        statusText = statusLine
+                    }
                 }catch(e){
                     console.log(xhr.responseText.toString())
                 }
@@ -75,6 +91,17 @@ ApplicationWindow {
         }
         xhr.open("GET", "http://"+settings.rpcBindIp+":"+settings.rpcBindPort+"/getinfo")
         xhr.send()
+    }
+
+    function delay(delayTime, cb){
+        delayTimer.interval = delayTime
+        delayTimer.repeat = false
+        delayTimer.triggered.connect(cb)
+        delayTimer.start()
+    }
+
+    Timer {
+        id: delayTimer
     }
 
     Timer {
@@ -94,6 +121,28 @@ ApplicationWindow {
                 leftPadding: 8
                 rightPadding: 8
             }
+        }
+    }
+
+    MessageDialog {
+        id: quitConfirmDialog
+        title: "Confirmation"
+        icon: StandardIcon.Question
+        text: "Daemon is currently running, are you sure want to stop the daemon and quit?"
+        standardButtons: StandardButton.Yes | StandardButton.No
+        onYes: {
+            syncInfoTimer.stop()
+            daemonStopRequested = true
+            appQuitRequested = true
+            statusText = "Stopping daemon, may took a while to complete, please be patient..."
+            daemonLauncher.stop()
+            //Qt.quit()
+        }
+        onNo: {
+            appQuitRequested = false
+            daemonStopRequested = false
+            delayTimer.stop()
+            syncInfoTimer.restart()
         }
     }
 
@@ -134,7 +183,13 @@ ApplicationWindow {
             statusText  = "Stopped"
             dstate = "finished"
             syncInfoTimer.stop()
-            stopping = false
+            daemonStopRequested = false
+            if(appQuitRequested){
+                delay(1000, function(){
+                    Qt.quit();
+                })
+            }
+
         }
         onProcessError: {
             messageDialog.text = errors
@@ -142,6 +197,11 @@ ApplicationWindow {
             statusText  = "Stopped"
             dstate = "stopped"
             syncInfoTimer.stop()
+            if(appQuitRequested){
+                delay(1000, function(){
+                    Qt.quit();
+                })
+            }
         }
         onStatusChanged: {
             statusText = status

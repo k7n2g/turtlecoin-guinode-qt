@@ -40,19 +40,6 @@ Item {
     property string daemonName: "TurtleCoind"
     property bool dialogDirmode: false
 
-    Timer {
-        id: killTimer
-    }
-
-    function delay(delayTime, cb){
-        killTimer.interval = delayTime
-        killTimer.repeat = false
-        killTimer.triggered.connect(cb)
-        killTimer.start()
-    }
-
-
-
     function getDirName(isDaemon) {
         if(!isDaemon){
             if(settings.dataDir.length) return settings.dataDir
@@ -330,12 +317,12 @@ Item {
                 onClicked: {
                     launcherStopButton.enabled = false
                     syncInfoTimer.stop()
-                    stopping = true
+                    daemonStopRequested = true
                     // wait for syncstatus requests clear
                     delay(3100, function(){
-                        statusText = "Stopping daemon..."
+                        statusText = "Stopping daemon, may took a while to complete, please be patient..."
                         daemonLauncher.stop()
-                        killTimer.stop()
+                        delayTimer.stop()
                         // todo: kill if daemon stuck/took too long to stop
                     })
                 }
