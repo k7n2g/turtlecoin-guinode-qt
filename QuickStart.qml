@@ -35,30 +35,22 @@ Item {
     }
     clip: true
 
+
     property string processState: "stopped"
     property string daemonName: "TurtleCoind"
     property bool dialogDirmode: false
 
-    Timer {
-        id: killTimer
-    }
-
-    function delay(delayTime, cb){
-        killTimer.interval = delayTime;
-        killTimer.repeat = false;
-        killTimer.triggered.connect(cb);
-        killTimer.start();
-    }
-
-
-
     function getDirName(isDaemon) {
         if(!isDaemon){
-            return settings.dataDir
+            if(settings.dataDir.length) return settings.dataDir
+            return ""
         }
 
-        var re = new RegExp(/TurtleCoind?(\.*)$/)
-        return settings.daemonPath.replace(re, '')
+        if(settings.daemonPath.length){
+            var re = new RegExp(/TurtleCoind?(\.*)$/)
+            return settings.daemonPath.replace(re, '')
+        }
+        return "TurtleCoind"
     }
 
     function isAddressValid(addr) {
@@ -149,8 +141,8 @@ Item {
                     Layout.preferredWidth: (launcherTab.width / 1.275)
                     Layout.fillWidth: true
                     readOnly: true
-                    onAccepted: {
-                        settings.daemonPath = qsTr(text)
+                    onTextChanged: {
+                        settings.daemonPath = text
                     }
                 }
 
@@ -181,8 +173,9 @@ Item {
                     Layout.preferredWidth: (launcherTab.width / 1.275)
                     Layout.fillWidth: true
                     readOnly: true
-                    onAccepted: {
-                        settings.dataDir = qsTr(text)
+                    placeholderText: "Leave blank to use default path"
+                    onTextChanged: {
+                        settings.dataDir = text
                     }
                 }
 
@@ -265,7 +258,7 @@ Item {
             //bottomMargin: statusBarText.height + 12
 
         }
-        height: buttonRow.height * 1.5
+        height: buttonRow.height * 1.2
         color: Qt.darker(palette.window, 1.1)
         border.color: Qt.darker(palette.window, 1.3)
 
@@ -274,7 +267,7 @@ Item {
             spacing: 6
             anchors.verticalCenter: parent.verticalCenter
             anchors.right: parent.right
-            anchors.rightMargin: 12
+            anchors.rightMargin: 8
             height: implicitHeight
             width: parent.width
             layoutDirection: Qt.RightToLeft
@@ -284,7 +277,6 @@ Item {
                 State {
                     name: 'started'
                     PropertyChanges{
-
                             target: launcherButton
                             enabled: false
                     }
@@ -303,7 +295,6 @@ Item {
                         target: launcherStopButton
                         enabled: false
                     }
-
                 },
                 State{
                     name: 'finished'
@@ -322,14 +313,16 @@ Item {
                 id: launcherStopButton
                 text: "STOP"
                 anchors.verticalCenter: parent.verticalCenter
+
                 onClicked: {
                     launcherStopButton.enabled = false
-                    syncInfoTimer.stop();
+                    syncInfoTimer.stop()
+                    daemonStopRequested = true
                     // wait for syncstatus requests clear
                     delay(3100, function(){
-                        statusText = "Stopping daemon..."
-                        daemonLauncher.stop();
-                        killTimer.stop();
+                        statusText = "Stopping daemon, may took a while to complete, please be patient..."
+                        daemonLauncher.stop()
+                        delayTimer.stop()
                         // todo: kill if daemon stuck/took too long to stop
                     })
                 }
@@ -388,7 +381,7 @@ Item {
                             args.push(settings.rpcBindPort)
                         }
 
-                        daemonLauncher.arguments = args;
+                        daemonLauncher.arguments = args
                         daemonLauncher.launch()
                     }
 

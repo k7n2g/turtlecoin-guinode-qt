@@ -25,6 +25,7 @@
 #include <QtWidgets/QApplication>
 #else
 #include <QtGui/QGuiApplication>
+#include <QQuickStyle>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -33,6 +34,8 @@ QT_BEGIN_NAMESPACE
 #define QtQuickControlsApplication QApplication
 #else
 #define QtQuickControlsApplication QGuiApplication
+QQuickStyle::setStyle("Fusion");
+QQuickStyle::setFallbackStyle("Default");
 #endif
 
 QT_END_NAMESPACE

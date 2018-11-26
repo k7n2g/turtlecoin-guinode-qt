@@ -58,7 +58,7 @@ Item {
               }
               text: turtleBuchet.logOutput
               onTextChanged: {
-                  cursorPosition = text.length;
+                  cursorPosition = text.length
               }
           }
 
